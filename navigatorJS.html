@@ -1,0 +1,486 @@
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+<script>
+    // components
+    function loader() {
+        var htmlData = `<div class="container" style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);">
+      <div class="d-flex justify-content-center">
+        <div class="spinner-border text-info" role="status">
+          <span class="sr-only">Loading...</span>
+        </div>
+      </div>`
+        return htmlData
+    }
+
+
+    function alert(title, content) {
+        var htmldata = `<div class="alert alert-warning alert-dismissible fade show" role="alert">
+          <strong>${title}</strong> ${content}
+          <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+          </button>
+          </div>
+          `
+        $("alert").append(htmldata)
+    }
+    function headerNav() {
+        var htmldata = `<nav class="navbar navbar-expand-lg navbar-light bg-light">
+  <a class="navbar-brand" href="#">Navbar</a>
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+  <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+    <div class="navbar-nav">
+      <a class="nav-link active" href="#">Home <span class="sr-only">(current)</span></a>
+      <a class="nav-link" href="#">Features</a>
+      <a class="nav-link" href="#">Pricing</a>
+      <a class="nav-link disabled">Disabled</a>
+    </div>
+  </div>
+</nav>`
+        $("navbar").append(htmldata)
+        return htmlData;
+    }
+
+
+
+
+    function globalMenu(){
+      let data = ``
+      $("globalnav").append(data)
+
+    }
+
+
+
+    // dont touch this functions
+    function cap(string) {
+        return string.charAt(0).toUpperCase() + string.slice(1);
+    }
+    // important varibales
+    var screenpages = [];
+    var screens = {};
+    // function to load screens
+    function load(screenName) { screenpages.push(0); google.script.run.withSuccessHandler((result) => { screens[screenName] = result; screenpages.pop(); runscreens() }).include(screenName); }
+    // dont change this are util function
+    function runscreens() { if (screenpages.length == 0) { main() } }
+    function pagechange(pagename, callback, pagevar) { $("main").html(pagename); if (callback != undefined) { if (pagevar == undefined) { callback(); } else { callback(pagevar); } } }
+    function setGlobal(temp, key, value) { if (temp === true) { sessionStorage.setItem(key, value); return 0 } localStorage.setItem(key, value); return 0 }
+    function getGlobal(temp, key) { if (temp === true) { return sessionStorage.getItem(key) } return localStorage.getItem(key) }
+    // dont touch this code
+
+    // this function run every thing is loaded
+    $(function loading() {
+        load("homePage");
+        load("notes");
+        load("aboutus");
+        load("adminLogin");
+        load("adminControl");
+        load("demo")
+
+
+    })
+    // main function to load diffren screen
+    function main() {
+        pagechange(screens.homePage,homePage,{"index":"index"});
+        // pagechange(screens.adminControl,adminControl)
+        // pagechange(screens.notes, Notes);
+        // pagechange(screens.demo,demo);
+    }
+
+    function link(){
+      $("#about").click(() => {
+            pagechange(screens.aboutus, AboutUs);
+      })
+      $("#home").click(() => {
+            pagechange(screens.homePage,homePage);
+      })
+      $("#user").click(() => {
+            pagechange(screens.adminLogin, adminLogin);
+      })
+      $("#notes").click(() => {
+            pagechange(screens.notes, Notes);
+      })
+    }
+
+
+    function demo(){
+      link()
+    }
+
+    function homePage(data) {
+
+        link()
+        $("#fbtn").click(()=>{
+          pagechange(screens.notes, Notes);
+        })
+    }
+
+
+
+
+    function Notes(pagedata) {
+        link()
+
+        /*
+        status code
+        pagedata == undefine(page loaded in first st)
+        0 = sem data
+        1 = course data
+        2 = notes
+        */
+        $("divCol").empty()
+        if (pagedata == undefined) {
+            link()
+            let index = 0
+            google.script.run.withSuccessHandler((data) => {
+                console.log(data)
+                let runLoop = Math.ceil(data.length / 4);
+                console.log(runLoop)
+                for (rl = 0; runLoop > rl; rl++) {
+                    index += 4
+
+                    tag = "<div class='col'>"
+                    for (it = rl*4; index > it; it++) {
+                        if (it >= data.length) break;
+                        console.log(it)
+                        mdata = data[it]
+                        console.log(mdata)
+                        temp = `<div class="card abtn mt-3" data="${mdata[0]}" style="border: solid rgba(0, 0, 0, 0.231) 1px;">
+                                <div class="card-header"></div>
+                                <div class="card-body">
+                                  <h5 class="card-title"><center>${mdata[1]}</center></h5>
+                                </div>
+                                </div>`
+                        // tag += `<button data="${mdata[0]}" class="abtn">${mdata[1]}</button>`
+                        tag += temp
+                    }
+                    tag += "</div>"
+                    // console.log(tag)
+                    $("divCol").append(tag)
+                    tag = ""
+
+                    $(".abtn").click((target) => {
+                        console.log($(target["delegateTarget"]).attr("data"))
+                        pagechange(screens.notes, Notes, { "code": 0, "bid": $(target["delegateTarget"]).attr("data") });
+                    })
+                }
+            }).getAllBranch();
+        }
+        else if (pagedata["code"] == 0) {
+          
+            link()
+            let index = 0
+            google.script.run.withSuccessHandler((data) => {
+                let runLoop = Math.ceil(data.length / 4);
+                console.log("---------------------")
+                $("divCol").empty()
+                for (rl = 0; runLoop > rl; rl++) {
+                    index += 4
+                    tag = "<row class='col'>"
+                    for (it = rl*4; index > it; it++) {
+                        if (it >= data.length) break;
+                        mdata = data[it]
+                        console.log(it)
+                        id = mdata['id']
+                        name = mdata['name']
+                        temp = `<div class="card abtn mt-3" data="${id}" style="border: solid rgba(0, 0, 0, 0.231) 1px;">
+                                <div class="card-header"></div>
+                                <div class="card-body">
+                                  <h5 class="card-title"><center>${name}</center></h5>
+                                </div>
+                                </div>`
+                        tag += temp
+                    }
+                    tag += "</row>"
+                    
+                    $("divCol").append(tag)
+
+                    $(".abtn").click((target) => {
+                        pagechange(screens.notes, Notes, { "code": 1, "sid": $(target["delegateTarget"]).attr("data") });
+                    })
+                }
+            }).getSem(pagedata["bid"]);
+        }
+        else if(pagedata["code"] == 1){
+          $("divCol").empty()
+          link()
+          let index = 0
+            google.script.run.withSuccessHandler((data) => {
+                let runLoop = Math.ceil(data.length / 4);
+                $("divCol").empty()
+                for (rl = 0; runLoop > rl; rl++) {
+                    index += 4
+                    tag = "<row class='col'>"
+                    for (it = rl*4; index > it; it++) {
+                        if (it >= data.length) break;
+                        mdata = data[it]
+                        id = mdata['id']
+                        name = mdata['cname']
+                        temp = `<div class="card abtn mt-3" data="${id}" style="border: solid rgba(0, 0, 0, 0.231) 1px;">
+                                <div class="card-header"></div>
+                                <div class="card-body">
+                                  <h5 class="card-title"><center>${name}</center></h5>
+                                </div>
+                                </div>`
+                        tag += temp
+                    }
+                    tag += "</row>"
+                    
+                    $("divCol").append(tag)
+                    tag = ""
+                    $(".abtn").click((target) => {
+                        pagechange(screens.notes, Notes, { "code": 2, "cid": $(target["delegateTarget"]).attr("data") });
+                    })
+                }
+            }).getCourse(pagedata["sid"]);
+
+        }
+        else if(pagedata["code"] == 2){
+          $("divCol").empty()
+          link()
+          let index = 0
+            google.script.run.withSuccessHandler((data) => {
+                let runLoop = Math.ceil(data.length / 4);
+                $("divCol").empty()
+                for (rl = 0; runLoop > rl; rl++) {
+                    index += 4
+                    tag = "<row class='col'>"
+                    for (it = rl*4; index > it; it++) {
+                        if (it >= data.length) break;
+                        mdata = data[it]
+                        id = mdata['id']
+                        name = mdata['title']
+                        link = `https://drive.google.com/uc?id=${mdata['link']}`
+                        tag += `<a href="${link}" class="btn btn-primary btn-lg mt-3 ml-3"  download="${name}">${name}</a>`
+                    }
+                    tag += "</row>"
+                    
+                    $("divCol").append(tag)
+                    tag = ""
+                    $(".abtn").click((target) => {
+                        pagechange(screens.notes, Notes, { "code": 2, "cid": $(target["delegateTarget"]).attr("data") });
+                    })
+                }
+            }).getLink(pagedata["cid"]);
+
+        }
+    }
+
+    function AboutUs() {
+        link()
+    }
+
+
+    function adminLogin() {
+        $("#back").click(() => {
+            pagechange(screens.homePage, homePage, { "index": "index" });
+        })
+        $("#submit").click(() => {
+            username = $("#username").val();
+            password = $("#password").val();
+            google.script.run.withSuccessHandler((data) => {
+                if (data == -2) {
+                    alert("Auth problem", "check your username")
+                }
+                if (data == -1) {
+                    alert("Auth problem", "check your password")
+                }
+                if (data == 0) {
+                    pagechange(screens.adminControl, adminControl)
+                }
+                // console.log(data)
+            }).makeLogin(username, password)
+        })
+    }
+
+
+
+
+    function adminControl() {
+        // load data for options
+
+        // branch name
+        google.script.run.withSuccessHandler((data) => {
+            data.forEach((d) => {
+                $("#sem_sel_branchname").append(`<option value="${d[0]}">${d[1]}</option>`)
+            })
+        }).getAllBranch();
+        google.script.run.withSuccessHandler((data) => {
+            data.forEach((d) => {
+                $("#sub_sel_branchname").append(`<option value="${d[0]}">${d[1]}</option>`)
+            })
+        }).getAllBranch();
+        google.script.run.withSuccessHandler((data) => {
+            data.forEach((d) => {
+                $("#lik_sel_branchname").append(`<option value="${d[0]}">${d[1]}</option>`)
+            })
+        }).getAllBranch();
+        // event management
+
+        // back button
+        $("#back").click(() => {
+            pagechange(screens.homePage, homePage, { "index": "index" });
+        })
+        // refresh button
+        $("#refresh").click(() => {
+            // branch name
+            $("#sem_sel_branchname").empty()
+            $("#sem_sel_branchname").append("<option>data is loaded</option>")
+            $("#sub_sel_branchname").empty()
+            $("#sub_sel_branchname").append("<option>data is loaded</option>")
+            $("#lik_sel_branchname").empty()
+            $("#lik_sel_branchname").append("<option>data is loaded</option>")
+            google.script.run.withSuccessHandler((data) => {
+                data.forEach((d) => {
+                    $("#sem_sel_branchname").append(`<option value="${d[0]}">${d[1]}</option>`)
+                })
+            }).getAllBranch();
+            google.script.run.withSuccessHandler((data) => {
+                data.forEach((d) => {
+                    $("#sub_sel_branchname").append(`<option value="${d[0]}">${d[1]}</option>`)
+                })
+            }).getAllBranch();
+            google.script.run.withSuccessHandler((data) => {
+                data.forEach((d) => {
+                    $("#lik_sel_branchname").append(`<option value="${d[0]}">${d[1]}</option>`)
+                })
+            }).getAllBranch();
+        })
+        $("#sub_refresh").click(() => {
+            // branch name
+            $("#sem_sel_branchname").empty()
+            $("#sem_sel_branchname").append("<option>data is loaded</option>")
+            $("#sub_sel_branchname").empty()
+            $("#sub_sel_branchname").append("<option>data is loaded</option>")
+            $("#lik_sel_branchname").empty()
+            $("#lik_sel_branchname").append("<option>data is loaded</option>")
+            google.script.run.withSuccessHandler((data) => {
+                data.forEach((d) => {
+                    $("#sem_sel_branchname").append(`<option value="${d[0]}">${d[1]}</option>`)
+                })
+            }).getAllBranch();
+            google.script.run.withSuccessHandler((data) => {
+                data.forEach((d) => {
+                    $("#sub_sel_branchname").append(`<option value="${d[0]}">${d[1]}</option>`)
+                })
+            }).getAllBranch();
+            google.script.run.withSuccessHandler((data) => {
+                data.forEach((d) => {
+                    $("#lik_sel_branchname").append(`<option value="${d[0]}">${d[1]}</option>`)
+                })
+            }).getAllBranch();
+        })
+        $("#lik_refresh").click(() => {
+            // branch name
+            $("#sem_sel_branchname").empty()
+            $("#sem_sel_branchname").append("<option>data is loaded</option>")
+            $("#sub_sel_branchname").empty()
+            $("#sub_sel_branchname").append("<option>data is loaded</option>")
+            $("#lik_sel_branchname").empty()
+            $("#lik_sel_branchname").append("<option>data is loaded</option>")
+            google.script.run.withSuccessHandler((data) => {
+                data.forEach((d) => {
+                    $("#sem_sel_branchname").append(`<option value="${d[0]}">${d[1]}</option>`)
+                })
+            }).getAllBranch();
+            google.script.run.withSuccessHandler((data) => {
+                data.forEach((d) => {
+                    $("#sub_sel_branchname").append(`<option value="${d[0]}">${d[1]}</option>`)
+                })
+            }).getAllBranch();
+            google.script.run.withSuccessHandler((data) => {
+                data.forEach((d) => {
+                    $("#lik_sel_branchname").append(`<option value="${d[0]}">${d[1]}</option>`)
+                })
+            }).getAllBranch();
+        })
+        // add branch
+        $("#branch_btn_submit").click(() => {
+            google.script.run.withSuccessHandler((data) => {
+                alert("branch is added", "")
+                $("#branch_inp_name").val("")
+            }).addBranch($("#branch_inp_name").val())
+        })
+
+        // add semester
+        $("#sem_btn_submit").click(() => {
+            google.script.run.withSuccessHandler((data) => {
+                $("#sem_inp_name").val("")
+                $("#sem_sel_branchname").val("")
+                alert("sem is added", "")
+            }).addSem($("#sem_inp_name").val(), $("#sem_sel_branchname").val())
+        })
+
+        // add course
+        // slecting semester
+        $("#sub_sel_branchname").on('change', (sel) => {
+            // console.log($("#sub_sel_branchname").val())
+            $("#sub_sel_semname").empty()
+            $("#sub_sel_semname").append("<option></option>")
+            google.script.run.withSuccessHandler((data) => {
+                data.forEach((d) => {
+                    $("#sub_sel_semname").append(`<option value="${d["id"]}">${d["name"]}</option>`)
+                })
+
+            }).getSem($("#sub_sel_branchname").val())
+        })
+
+        $("#sub_btn_submit").click(() => {
+            console.log("hello")
+            google.script.run.withSuccessHandler((data) => {
+                $("#sub_inp_name").empty()
+                $("#sub_sel_semname").empty()
+                alert("subject is added", "")
+            }).addSubject($("#sub_inp_name").val(), $("#sub_sel_semname").val())
+
+        })
+
+        // add links
+        $("#lik_sel_branchname").on('change', (sel) => {
+            // console.log($("#sub_sel_branchname").val())
+            $("#lik_sel_semname").empty()
+            $("#lik_sel_semname").append("<option>data is loaded</option>")
+            google.script.run.withSuccessHandler((data) => {
+                data.forEach((d) => {
+                    $("#lik_sel_semname").append(`<option value="${d["id"]}">${d["name"]}</option>`)
+                })
+
+            }).getSem($("#lik_sel_branchname").val())
+        })
+        $("#lik_sel_semname").on('change', (sel) => {
+            console.log($("#lik_sel_semname").val())
+            $("#lik_sel_couname").empty()
+            $("#lik_sel_couname").append("<option>data is loaded</option>")
+            google.script.run.withSuccessHandler((data) => {
+                data.forEach((d) => {
+                    $("#lik_sel_couname").append(`<option value="${d["id"]}">${d["cname"]}</option>`)
+                })
+
+            }).getSubject($("#lik_sel_semname").val())
+        })
+
+
+        $("#lik_btn_submit").click(() => {
+            google.script.run.withSuccessHandler((data) => {
+                $("#lik_sel_couname").empty()
+                $("#lik_sel_semname").empty()
+                $("#lik_inp_title").val("")
+                $("#lik_inp_link").val("")
+                alert("data is added", "")
+            }).addLink($("#lik_inp_title").val(), $("#lik_inp_link").val(), $("#lik_sel_couname").val())
+        })
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+</script>
